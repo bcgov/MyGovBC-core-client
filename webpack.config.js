@@ -59,7 +59,7 @@ var _load = function () {
       exclude: [
         path.resolve(__dirname, "node_modules")
       ],
-      loader: 'string-replace',
+      loader: require.resolve('string-replace-loader'),
       query: {
         search: '__APP_CONSTANTS__',
         replace: JSON.stringify(webpackConfigs.appConstants)

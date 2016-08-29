@@ -12,7 +12,6 @@ var stylesLoader = 'css-loader?sourceMap!postcss-loader!sass-loader?outputStyle=
 
 
 module.exports = function (_path) {
-  var rootAssetPath = _path + 'src';
 
   var webpackConfig = {
     // entry points
@@ -22,17 +21,25 @@ module.exports = function (_path) {
       polyfill: 'babel-polyfill'
     },
 
+    debug: true,
+
     // output system
     output: {
       path: require("path").resolve("dist"),
       filename: '[name].js',
 //      publicPath: '/',
     },
+    // babel ignores this, but other webpack plugins should be ok
+    resolveLoader: {
+      root: path.join(__dirname, 'node_modules'),
+      fallback: [path.join(__dirname, 'node_modules')]
+    },
 
     // resolves modules
     resolve: {
+      fallback: [path.join(_path, 'node_modules')],
       extensions: ['', '.js'],
-      modulesDirectories: ['node_modules'],
+      modulesDirectories: [path.join(_path, 'node_modules')],
       alias: {
         _appRoot: path.join(_path, 'src', 'app'),
         _images: path.join(_path, 'src', 'app', 'assets', 'images'),
@@ -41,19 +48,21 @@ module.exports = function (_path) {
       }
     },
 
+
+
     // modules resolvers
     module: {
       noParse: [],
       loaders: [{
         test: /\.html$/,
         loaders: [
-          'ngtemplate-loader?relativeTo=' + _path,
-          'html-loader?attrs[]=img:src&attrs[]=img:data-src'
+          require.resolve('ngtemplate-loader') + '?relativeTo=' + _path,
+          require.resolve('html-loader')
         ]
       }, {
         test: /\.js$/,
         loaders: [
-          'baggage-loader?[file].html&[file].css'
+          require.resolve('baggage-loader') + '?[file].html&[file].css'
         ]
       }, {
         test: /\.js$/,
@@ -61,52 +70,52 @@ module.exports = function (_path) {
           new RegExp('node_modules\\' + path.sep + '(?!mygov(bc)?-).*', 'i')
         ],
         loaders: [
-          'ng-annotate-loader'
+          require.resolve('ng-annotate-loader')
         ]
       }, {
         test: /\.js$/,
         exclude: [
           new RegExp('node_modules\\' + path.sep + '(?!mygov(bc)?-).*', 'i')
         ],
-        loader: 'babel-loader',
+        loader: require.resolve('babel-loader'),
         query: {
           cacheDirectory: true,
-          plugins: ['transform-runtime', 'add-module-exports'],
-          presets: ['angular', 'es2017']
+          plugins: [require.resolve('babel-plugin-transform-runtime'), require.resolve('babel-plugin-add-module-exports')],
+          presets: [require.resolve('babel-preset-angular'), require.resolve('babel-preset-es2017')]
         }
       }, {
         test: /\.css$/,
         loaders: [
-          'style-loader',
-          'css-loader?sourceMap',
-          'postcss-loader'
+          require.resolve('style-loader'),
+          require.resolve('css-loader') + '?sourceMap',
+          require.resolve('postcss-loader')
         ]
       }, {
         test: /\.less$/,
-        loader: "style!css!postcss!less"
+        loader: require.resolve('style-loader') + '!' + require.resolve('css-loader') + '!' + require.resolve ('postcss-loader') + '!' + require.resolve('less-loader')
       }, {
         test: /\.(scss|sass)$/,
         loader: DEVELOPMENT ? ('style-loader!' + stylesLoader) : ExtractTextPlugin.extract('style-loader', stylesLoader)
       }, {
         test: /\.(woff2|woff|ttf|eot|svg)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loaders: [
-          "url-loader?name=assets/fonts/[name]_[hash].[ext]"
+          require.resolve('url-loader') + '?name=assets/fonts/[name]_[hash].[ext]'
         ]
       }, {
         test: /\.(jpe?g|png|gif)$/i,
         loaders: [
-          'url-loader?name=assets/images/[name]_[hash].[ext]&limit=10000'
+          require.resolve('url-loader') + '?name=assets/images/[name]_[hash].[ext]&limit=10000'
         ]
       }, {
         test: require.resolve("angular"),
         loaders: [
-          "expose?angular"
+          require.resolve('expose-loader') + "?angular"
         ]
       }, {
         test: require.resolve("jquery"),
         loaders: [
-          "expose?$",
-          "expose?jQuery"
+          require.resolve('expose-loader') + "?$",
+          require.resolve('expose-loader') + "?jQuery"
         ]
       }
       ]
